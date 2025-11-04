@@ -269,8 +269,6 @@ When adding new datasets:
 
 ## License
 
-Internal use by Black Mental Health Collective.
 
 ## Contact
 
-For questions about the pipeline or data access, contact the BMHC data team.
