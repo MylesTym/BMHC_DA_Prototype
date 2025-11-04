@@ -18,7 +18,7 @@ SQL database artcitecture in an incomplete stage. Full implementation would requ
 ### Ingestion Process
 #### Client Satisfaction
 - **Script**: `ETL/ingest_client_satisfaction.py`
-- **Status**: WORKING
+- **Status**: COMPLETE
 - **Notes**: 'none@none.com' complicates data cleaning and analysis unnecesarily. Column names require renaming across the board.
 
 #### Clockify
