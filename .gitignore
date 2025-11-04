@@ -1,0 +1,45 @@
+# Environment variables (contains database credentials)
+.env
+
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Data files (sensitive participant information)
+data/
+*.csv
+*.xlsx
+*.xls
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Database exports/backups
+*.bak
+*.sql.bak
+
+# Temporary files
+*.tmp
+temp/
