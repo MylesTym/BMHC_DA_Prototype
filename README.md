@@ -1,6 +1,6 @@
 # BMHC Analysis Pipeline
 
-A data integration and analysis pipeline for Black Mental Health Collective (BMHC) program evaluation and reporting.
+A data integration and analysis pipeline for Black Mental Health Clinic (BMHC) program evaluation and reporting.
 
 ## Overview
 
@@ -99,7 +99,7 @@ BMHC-Analysis-pipeline/
 
 3. **Install dependencies**
    ```bash
-   pip install pandas sqlalchemy pymssql python-dotenv
+   pip install -r requirements.txt
    ```
 
 4. **Configure database connection**
