@@ -1,6 +1,6 @@
 # BMHC Analysis Pipeline
 
-A data integration and analysis pipeline for Black Mental Health Clinic (BMHC) program evaluation and reporting.
+A data integration and analysis pipeline for Black Mens Health Clinic (BMHC) program evaluation and reporting.
 
 ## Overview
 
