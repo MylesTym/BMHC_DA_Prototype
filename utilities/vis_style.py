@@ -1,5 +1,8 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 #################################################
-##########  PRIMARY BRANDING COLORS    ##########
+##########   PRIMARY BRANDING COLORS   ##########
 #################################################
 BMHC_COLORS = {
     'primary': '#1f4e79',
@@ -13,31 +16,33 @@ BMHC_COLORS = {
 BMHC_PALETTE = list(BMHC_COLORS.values())
 
 ###################################################
-##########  MATPLOTLIB STLYING FORMAT    ##########
+##########   MATPLOTLIB STLYING FORMAT   ##########
 ###################################################
 def apply_matplotlib_style():
     """Apply BMHC styling to matplotlib"""
-    import matplotlib.pyplot as plt
     plt.rcParams.update({
-        'font.family': 'Arial',
+        'font.family': 'Inter',
         'font.size': 12,
+        'axes.prop_cycle': plt.cycler('color', BMHC_PALETTE),
         'axes.facecolor': 'white',
         'figure.facecolor': 'white',
-        'axes.prop_cycle': plt.cycler('color', BMHC_PALETTE)
+        'grid.color': '#d3d3d3',
+        'grid.linestyle': '--',
+        'axes.edgecolor': 'white',
+        'axes.grid': True       
     })
 
 ################################################
-##########  SEABORN STLYING FORMAT    ##########
+##########   SEABORN STLYING FORMAT   ##########
 ################################################
 def apply_seaborn_style():
     """Apply BMHC styling to seaborn"""
-    import seaborn as sns
     sns.set_style("whitegrid")
     sns.set_palette(BMHC_PALETTE)
 
 
 ##############################################
-##########  PLOTY STLYING FORMAT    ##########
+##########   PLOTY STLYING FORMAT   ##########
 ##############################################
 def apply_plotly_style(fig):
     """Apply BMHC styling to plotly figure"""
