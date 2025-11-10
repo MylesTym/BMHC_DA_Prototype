@@ -20,8 +20,9 @@ BMHC_PALETTE = list(BMHC_COLORS.values())
 ###################################################
 def apply_matplotlib_style():
     """Apply BMHC styling to matplotlib"""
+    plt.style.use('fivethirtyeight')
     plt.rcParams.update({
-        'font.family': 'Inter',
+        'font.family': 'Arial',
         'font.size': 12,
         'axes.prop_cycle': plt.cycler('color', BMHC_PALETTE),
         'axes.facecolor': 'white',

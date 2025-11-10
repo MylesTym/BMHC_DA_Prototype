@@ -6,4 +6,4 @@ FROM
 client_satisfaction)
 
 SELECT
-MONTH([timestamp]),
+MONTH([timestamp])
