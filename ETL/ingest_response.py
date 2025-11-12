@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import os
+import re
 
 ########################################################################################
 ########################################################################################
@@ -51,6 +52,13 @@ def get_or_create_profile(email, first_name, last_name, conn):
         """
         result = pd.read_sql(insert_query, conn)
         return result.iloc[0]['profile_id']
+########################################################################################
+########################################################################################
+def split_services(text):
+    if pd.isna(text):
+        return []
+    # Split on commas not inside parentheses
+    return [cat.strip() for cat in re.split(r',(?![^(]*\))', text) if cat.strip()]
 ########################################################################################
 ########################################################################################
 df = pd.read_csv('data/response.csv')
@@ -107,6 +115,10 @@ catCols = [
 ]
 for col in catCols:
     df[col] = df[col].astype('category')
+
+# category fixing
+# Category fixing: split on commas outside parentheses, then join as a string
+df['services_provided'] = df['services_provided'].apply(split_services).apply(lambda x: ', '.join(x))
 
 # Multiple categoricals
 numCols = [

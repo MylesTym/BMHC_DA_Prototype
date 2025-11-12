@@ -8,17 +8,35 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from plotly.subplots import make_subplots
 import plotly.express as px
-from scripts.analysis_functions import get_monthly_responses, get_review_averages, get_binary_metrics, get_survey_count
+from scripts.analysis_functions import get_monthly_responses, get_review_averages, get_binary_metrics, get_survey_count, get_health_delta
 from utilities.vis_style import apply_plotly_style, apply_matplotlib_style, BMHC_COLORS
 #####################################################################################
 #####################################################################################
+# Move this to it's own .py in dashboard directory #
 st.markdown(
     """
     <style>
+    [data-testid="stHeader"] {
+        margin-bottom: 0rem !important;
+        background-color: #00000;
+
+    }
+    [data-testid="stMain"],
+    [data-testid="stMainBlockContainer"],
+    [data-testid="stAppViewBlockContainer"]{
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        background-color: #ecf0f1;
+        color: #000000;
+    }
+    section[data-testid="stAppViewContainer"]{
+        padding-top: 0rem !important;
+    }
     [data-testid="stSidebar"] {
         min-width: 180px;
         max-width: 180px;
         width: 180px;
+        background-color: #d0a53f;
     }
     </style>
     """,
@@ -41,12 +59,12 @@ st.set_page_config(layout="wide", page_title="Dashboard")
 #####################################################################################
 #####################################################################################
 # Dashboard Title
-st.title("BMHC Prototype Impact Dashboard")
-st.write("Default Day Interval: 180")
+st.title("BMHC Prototype Client Sat Dashboard")
+st.write(f"Default Day Interval: 180")
 #####################################################################################
 #####################################################################################
 
-# Date picker with default of past 30 days
+# Date picker with default of past 180 days
 #Defaults
 default_end = date.today()
 default_start = default_end - timedelta(days=180)
@@ -95,6 +113,15 @@ with col3:
         height=350
     )
     st.plotly_chart(fig3, use_container_width=True)
+#####################################################################################
+#####################################################################################
+with st.container():
+    col_left, col_right = st.columns(2)
+    with col_left:
+        fig4 = get_health_delta(engine, start_date, end_date)
+        st.plotly_chart(fig4, use_container_width=True)
+    #with col_right:
+ 
 # # Sidebar filters
 #group = st.sidebar.selectbox("Select Group", options=group_list)
 #date_range = st.sidebar.date_input("Date Range", value=(start_date, end_date))

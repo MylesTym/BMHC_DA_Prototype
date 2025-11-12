@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
-from wordcloud import WordCloud
 from tqdm import tqdm
 import re
 import os
@@ -153,3 +152,57 @@ def get_survey_count(engine, start_date=None, end_date=None):
         """
         df = pd.read_sql(query, engine)
         return int(df.iloc[0, 0])
+#####################################################################################
+#####################################################################################
+def get_health_delta(engine, start_date=None, end_date=None):
+        where_clause = ""
+        if start_date and end_date:
+            where_clause = f"WHERE timestamp >= '{start_date}' AND timestamp <= '{end_date}'"     
+        query = f"""
+        WITH total_records AS (
+        SELECT COUNT(*) AS total FROM client_satisfaction
+        ),
+        monthly_counts AS (
+            SELECT
+                YEAR([timestamp]) AS year,
+                MONTH([timestamp]) AS month,
+                COUNT(*) AS month_count,
+                AVG(DATEDIFF(day, date_previous_doctor_visit, [timestamp])) AS avg_days_since_prev
+            FROM client_satisfaction
+            {where_clause}
+            GROUP BY YEAR([timestamp]), MONTH([timestamp])
+        )
+        SELECT
+            m.year,
+            m.month,
+            m.month_count,
+            t.total,
+            CAST(m.month_count AS FLOAT) / t.total AS per_capita,
+            m.avg_days_since_prev AS "Average span in days since previous doctor visit"
+        FROM monthly_counts m
+        CROSS JOIN total_records t
+        ORDER BY m.year, m.month
+        """
+        df = pd.read_sql(query, engine)
+
+        # Date column
+        df['date'] = pd.to_datetime(df['year'].astype(str) + '-' + df['month'].astype(str) + '-01')
+
+        # Matplotlib plotting
+        fig = px.line(
+            df,
+            x='date',
+            y='Average span in days since previous doctor visit',
+            title='BMHC First Medical Interaction in X Days',
+            labels={'date': 'Date', 'Average span in days since previous doctor visit': 'Avg Days Since Previous Visit'}
+        )
+        fig.update_traces(mode='lines+markers', marker=dict(size=8, color='blue'))
+        fig.update_layout(
+            width=1000,   # wide
+            height=300,   # short
+            margin=dict(l=40, r=40, t=60, b=40)
+        )
+        apply_plotly_style(fig)
+        return fig
+#####################################################################################
+#####################################################################################
