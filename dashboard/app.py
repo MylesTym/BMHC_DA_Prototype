@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import plotly.graph_objects as go
 from datetime import date, timedelta
 import streamlit as st
 import pandas as pd
@@ -8,7 +9,7 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from plotly.subplots import make_subplots
 import plotly.express as px
-from scripts.analysis_functions import get_monthly_responses, get_review_averages, get_binary_metrics, get_survey_count, get_health_delta
+from scripts.analysis_functions import get_monthly_responses, get_review_averages, get_binary_metrics, get_survey_count, get_health_delta, get_services_provided
 from utilities.vis_style import apply_plotly_style, apply_matplotlib_style, BMHC_COLORS
 #####################################################################################
 #####################################################################################
@@ -120,7 +121,9 @@ with st.container():
     with col_left:
         fig4 = get_health_delta(engine, start_date, end_date)
         st.plotly_chart(fig4, use_container_width=True)
-    #with col_right:
+    with col_right:
+        fig5 = get_services_provided(engine, start_date, end_date)
+        st.plotly_chart(fig5, use_container_width=True)
  
 # # Sidebar filters
 #group = st.sidebar.selectbox("Select Group", options=group_list)

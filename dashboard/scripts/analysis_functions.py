@@ -18,6 +18,7 @@ from nltk.corpus import stopwords
 from collections import Counter
 sys.path.append(os.path.join('..', 'utilities'))  # Navigate to utilities folder
 from utilities.vis_style import apply_plotly_style, apply_matplotlib_style, BMHC_COLORS
+import plotly.graph_objects as go
 
 #####################################################################################
 #####################################################################################
@@ -206,3 +207,67 @@ def get_health_delta(engine, start_date=None, end_date=None):
         return fig
 #####################################################################################
 #####################################################################################
+def get_services_provided(engine, start_date=None, end_date=None):
+        where_clause = ""
+        if start_date and end_date:
+            where_clause = f"WHERE timestamp >= '{start_date}' AND timestamp <= '{end_date}'"     
+        query = f"""
+        SELECT [timestamp], services_provided
+        FROM client_satisfaction
+        {where_clause}
+        """
+        df = pd.read_sql(query, engine)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+        def split_services(s):
+            if pd.isna(s):
+                return []
+            return [x.strip() for x in re.split(r',\s*(?![^()]*\))', s)]
+
+        df['service_list'] = df['services_provided'].apply(split_services)
+
+        exploded = df.explode('service_list')
+        exploded = exploded[exploded['service_list'].notna() & (exploded['service_list'] != '')]
+
+        exploded['date'] = exploded['timestamp'].dt.normalize()
+
+        daily_counts = exploded.groupby(['date', 'service_list']).size().reset_index(name='count')
+
+        full_dates = pd.date_range(
+            df['timestamp'].min().normalize(), 
+            df['timestamp'].max().normalize(), 
+            freq='D'
+        )
+
+        services = exploded['service_list'].unique()
+        full_index = pd.MultiIndex.from_product([full_dates, services], names=['date', 'service_list'])
+
+        full_daily = daily_counts.set_index(['date', 'service_list']).reindex(full_index, fill_value=0).reset_index()
+        full_daily = full_daily.sort_values(['service_list', 'date'])
+        full_daily['cumulative_count'] = full_daily.groupby('service_list')['count'].cumsum()
+        fig = go.Figure()
+
+        unique_services = full_daily['service_list'].unique()
+
+        for service in unique_services:
+            service_data = full_daily[full_daily['service_list'] == service]
+            fig.add_trace(go.Scatter(
+                x=service_data['date'],
+                y=service_data['cumulative_count'],
+                mode='lines',
+                name=service
+            ))
+
+        fig.update_layout(
+            title='Cumulative Count of Services Provided Over Time',
+            xaxis_title='Date',
+            yaxis_title='Cumulative Count',
+            showlegend=False
+        )
+        apply_plotly_style(fig)
+        return fig
+#####################################################################################
+#####################################################################################
+
+
+
