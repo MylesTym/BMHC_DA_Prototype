@@ -17,7 +17,7 @@ from nltk.util import ngrams
 from nltk.corpus import stopwords
 from collections import Counter
 sys.path.append(os.path.join('..', 'utilities'))  # Navigate to utilities folder
-from utilities.vis_style import apply_plotly_style, apply_matplotlib_style, BMHC_COLORS
+from vis_style import apply_plotly_style, apply_matplotlib_style, BMHC_COLORS
 import plotly.graph_objects as go
 
 #####################################################################################
@@ -62,12 +62,12 @@ def get_monthly_responses(engine, start_date=None, end_date=None):
                 annotation_text=f"2025 Average: {df['responses'].mean():.1f}")
     fig.update_layout(xaxis_title='Month',yaxis_title='Number of Responses',
         hovermode='x unified',height=600,showlegend=True)
-    fig.update_traces(texttemplate='%{y}', textposition='outside')
+    fig.update_traces(texttemplate='%{y}', textposition='outside', marker_color='#4A0E4E')
     apply_plotly_style(fig)
     return fig
 #####################################################################################
 #####################################################################################
-def get_review_averages(engine, start_date=None, end_date=None):
+def get_review_averages(engine, start_date=None, end_date=None, metric="health_assessment"):
     where_clause = ""
     if start_date and end_date:
         where_clause = f"WHERE timestamp >= '{start_date}' AND timestamp <= '{end_date}'"
@@ -81,7 +81,7 @@ def get_review_averages(engine, start_date=None, end_date=None):
         {where_clause}
         """
         df = pd.read_sql(query, engine)
-        rating = df['health_assessment'].iloc[0]
+        rating = df[metric].iloc[0]
         if rating < 2.5:
             bar_color = "red"
         elif rating < 3.5:
@@ -89,12 +89,46 @@ def get_review_averages(engine, start_date=None, end_date=None):
         else:
             bar_color = "green"
         fig = go.Figure(go.Indicator(mode = "gauge+number", value= rating, domain = {'x': [0, 1], 'y': [0,1]},
-            title = {'text': "Health Assessment"},
             gauge = {'axis': {'range': [1, 5]}, 'bar': {'color': bar_color},'bgcolor': 'white'}
         ))
         apply_plotly_style(fig)
+        fig.update_layout(
+        showlegend=False,
+        title=None,
+        title_text='',  # Add this
+        annotations=[]  # Add this to remove any annotations
+        )
         return fig
 #####################################################################################
+def get_binary_metric(engine, metric, display_name=None, start_date=None, end_date=None):
+    where_clause = ""
+    if start_date and end_date:
+        where_clause = f"WHERE timestamp >= '{start_date}' AND timestamp <= '{end_date}'"
+    query = f"""
+    SELECT
+        SUM(CASE WHEN {metric} = 1 THEN 1 ELSE 0 END) AS true_count,
+        SUM(CASE WHEN {metric} = 0 THEN 1 ELSE 0 END) AS false_count
+    FROM client_satisfaction
+    {where_clause}
+    """
+    df = pd.read_sql(query, engine)
+    true_count = df['true_count'][0]
+    false_count = df['false_count'][0]
+    fig = go.Figure(data=[
+        go.Pie(
+            labels=['True', 'False'],
+            values=[true_count, false_count],
+            marker=dict(colors=['green', 'red'])
+        )
+    ])
+    fig.update_layout(
+         title=f"{display_name or metric} (True vs False)",
+         margin=dict(l=10, r=10, t=40, b=10),
+         height=200,
+         showlegend=False
+         )
+    apply_plotly_style(fig)
+    return fig
 #####################################################################################
 def get_binary_metrics(engine, start_date=None, end_date=None):
         where_clause = ""
@@ -114,7 +148,7 @@ def get_binary_metrics(engine, start_date=None, end_date=None):
         {where_clause}
         """
         df = pd.read_sql(query, engine)
-        metrics = ['Medical Needs Met', 'Provider Expectations']
+        metrics = ['Medical Needs Met', 'Provider Expectations', 'Trial Interest', 'Survey Interest']
         true_counts = [
             df['medical_needs_met_true'][0],
             df['provider_expectations_true'][0],
@@ -262,12 +296,37 @@ def get_services_provided(engine, start_date=None, end_date=None):
             title='Cumulative Count of Services Provided Over Time',
             xaxis_title='Date',
             yaxis_title='Cumulative Count',
-            showlegend=False
+            showlegend=False,
+            font_color= "#000000"
         )
         apply_plotly_style(fig)
         return fig
 #####################################################################################
 #####################################################################################
-
-
+def get_fig_no_count(engine, start_date=None, end_date=None):
+        where_clause = ""
+        if start_date and end_date:
+            where_clause = f"WHERE timestamp >= '{start_date}' AND timestamp <= '{end_date}'"     
+        query = f"""
+        SELECT
+            SUM(CASE WHEN survey_interest = 0 THEN 1 ELSE 0 END) AS no_count
+        FROM client_satisfaction
+        {where_clause}
+        """
+        df = pd.read_sql(query, engine)
+        return int(df.iloc[0, 0])
+#####################################################################################
+#####################################################################################
+def get_fig_yes_count(engine, start_date=None, end_date=None):
+        where_clause = ""
+        if start_date and end_date:
+            where_clause = f"WHERE timestamp >= '{start_date}' AND timestamp <= '{end_date}'"     
+        query = f"""
+        SELECT
+            SUM(CASE WHEN survey_interest = 1 THEN 1 ELSE 0 END) AS yes_count
+        FROM client_satisfaction
+        {where_clause}
+        """
+        df = pd.read_sql(query, engine)
+        return int(df.iloc[0, 0])
 

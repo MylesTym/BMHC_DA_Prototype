@@ -139,12 +139,12 @@ df['outreach_support'] = df['outreach_support'].str.lower().map({'yes': True, 'n
 
 df.info()
 
-with engine.begin() as conn:
-    # Map profile IDs inside transaction
-    df['profile_id'] = df.apply(lambda row: get_or_create_profile(row['email_address'], row['first_name'], row['last_name'], conn), axis=1)
+# with engine.begin() as conn:
+#     # Map profile IDs inside transaction
+#     df['profile_id'] = df.apply(lambda row: get_or_create_profile(row['email_address'], row['first_name'], row['last_name'], conn), axis=1)
     
-    # Drop personal info columns after profile mapping
-    df = df.drop(columns=["email_address", "first_name", "last_name"])
+#     # Drop personal info columns after profile mapping
+#     df = df.drop(columns=["email_address", "first_name", "last_name"])
     
-    # Insert into database
-    df.to_sql('client_satisfaction', conn, if_exists='append', index=False)
+#     # Insert into database
+#     df.to_sql('client_satisfaction', conn, if_exists='append', index=False)

@@ -9,8 +9,8 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from plotly.subplots import make_subplots
 import plotly.express as px
-from scripts.analysis_functions import get_monthly_responses, get_review_averages, get_binary_metrics, get_survey_count, get_health_delta, get_services_provided
-from utilities.vis_style import apply_plotly_style, apply_matplotlib_style, BMHC_COLORS
+from scripts.analysis_functions import get_monthly_responses, get_review_averages, get_binary_metrics, get_survey_count, get_health_delta, get_services_provided, get_fig_no_count, get_fig_yes_count, get_binary_metric
+from scripts.vis_style import apply_plotly_style, apply_matplotlib_style, BMHC_COLORS
 #####################################################################################
 #####################################################################################
 # Move this to it's own .py in dashboard directory #
@@ -20,13 +20,14 @@ st.markdown(
     [data-testid="stHeader"] {
         margin-bottom: 0rem !important;
         background-color: #00000;
-
     }
     [data-testid="stMain"],
     [data-testid="stMainBlockContainer"],
     [data-testid="stAppViewBlockContainer"]{
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0rem !important;
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
         background-color: #ecf0f1;
         color: #000000;
     }
@@ -37,9 +38,25 @@ st.markdown(
         min-width: 180px;
         max-width: 180px;
         width: 180px;
-        background-color: #d0a53f;
+        background: linear-gradient(to bottom, #d0a53f, #4A0E4E);
     }
-    </style>
+    [data-testid="stMetric"] div, 
+    [data-testid="stMetric"] span, 
+    [data-testid="stMetricLabel"], 
+    [data-testid="stMetricValue"] {
+        color: black !important;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        }
+    [data-testid="stVerticalBlock]{
+        margin-bottom: 0rem !important;
+        padding-bottom: 0rem !important;
+        padding-top: 0rem !important;
+    }
+    }
     """,
     unsafe_allow_html=True
 )
@@ -75,28 +92,46 @@ end_date = st.sidebar.date_input("End Date", value=default_end)
 #####################################################################################
 #####################################################################################
 metrics = {
-    "Total Reviews": get_survey_count(engine, start_date, end_date)
+    "Total Reviews-check the methods here": get_survey_count(engine, start_date, end_date),
+    "Reviews Declined-check the methods here": get_fig_no_count(engine, start_date, end_date),
+    "Total Offered-check the methods here": get_fig_yes_count(engine, start_date, end_date)
 }
-
-with st.container():
+with st.container(key="metrics-container"):
     cols = st.columns(len(metrics))
     for col, (label, value) in zip(cols, metrics.items()):
         col.metric(label=label, value=value)
 #####################################################################################
 #####################################################################################
 
-
-col1, col2, col3 = st.columns([1, 3, 1]) # window ratios
+with st.container():
+    col1, col2, col3 = st.columns([1, 3, 1]) # window ratios
 
 #####################################################################################
 #####################################################################################
 with col1:
-    fig1 = get_review_averages(engine, start_date, end_date)
+    st.markdown("<p style='text-align: center; margin: 0; font-weight: bold; font-size: 16px;'>Health Assessment</p>", unsafe_allow_html=True)    
+    fig1 = get_review_averages(engine, start_date, end_date, metric="health_assessment")
     fig1.update_layout(
         margin=dict(l=10, r=10, t=40, b=10),
         height=150
     )
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, use_container_width=True,)
+    
+    st.markdown("<p style='text-align: center; margin: 0; font-weight: bold; font-size: 16px;'>Mental Assessment</p>", unsafe_allow_html=True)    
+    fig12 = get_review_averages(engine, start_date, end_date, metric="mental_assessment")
+    fig12.update_layout(
+        margin=dict(l=10, r=10, t=40, b=10),
+        height=150
+    )
+    st.plotly_chart(fig12, use_container_width=True)
+    
+    st.markdown("<p style='text-align: center; margin: 0; font-weight: bold; font-size: 16px;'>Physical Assessment</p>", unsafe_allow_html=True)        
+    fig13 = get_review_averages(engine, start_date, end_date, metric="physical_assessment")
+    fig13.update_layout(
+        margin=dict(l=10, r=10, t=40, b=10),
+        height=150
+    )
+    st.plotly_chart(fig13, use_container_width=True)
 #####################################################################################
 #####################################################################################
 with col2:
@@ -108,23 +143,40 @@ with col2:
 #####################################################################################
 #####################################################################################
 with col3:
-    fig3 = get_binary_metrics(engine, start_date, end_date)
-    fig3.update_layout(
-        margin=dict(l=10, r=10, t=40, b=10),
-        height=350
-    )
-    st.plotly_chart(fig3, use_container_width=True)
+    pie_col1, pie_col2 = st.columns(2)
+    with pie_col1:
+            fig3 = get_binary_metric(engine, "clinical_trial_interest", "Medical Needs", start_date, end_date)
+            fig3.update_layout(autosize=True, margin=dict(l=10, r=0, t=40, b=0), height=250)
+            st.plotly_chart(fig3, use_container_width=True)
+
+            fig32 = get_binary_metric(engine, "survey_interest", "Medical Needs", start_date, end_date)
+            fig32.update_layout(autosize=True, margin=dict(l=10, r=0, t=40, b=0), height=250)
+            st.plotly_chart(fig32, use_container_width=True)
+
+    with pie_col2:
+            fig33 = get_binary_metric(engine, "provider_expectations", "Medical Needs", start_date, end_date)
+            fig33.update_layout(autosize=True, margin=dict(l=10, r=0, t=40, b=0), height=250)
+            st.plotly_chart(fig33, use_container_width=True)
+
+            fig34 = get_binary_metric(engine, "outreach_support", "Medical Needs", start_date, end_date)
+            fig34.update_layout(autosize=True, margin=dict(l=10, r=0, t=40, b=0), height=250)
+            st.plotly_chart(fig34, use_container_width=True)
 #####################################################################################
 #####################################################################################
 with st.container():
+    st.markdown("<div style='margin-top: -2rem'></div>", unsafe_allow_html=True)
     col_left, col_right = st.columns(2)
     with col_left:
         fig4 = get_health_delta(engine, start_date, end_date)
+        fig4.update_layout(height=350)
         st.plotly_chart(fig4, use_container_width=True)
     with col_right:
         fig5 = get_services_provided(engine, start_date, end_date)
+        fig5.update_layout(height=350)
         st.plotly_chart(fig5, use_container_width=True)
  
+st.cache_data.clear()
+st.cache_resource.clear()
 # # Sidebar filters
 #group = st.sidebar.selectbox("Select Group", options=group_list)
 #date_range = st.sidebar.date_input("Date Range", value=(start_date, end_date))
