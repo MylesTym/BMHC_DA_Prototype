@@ -1,7 +1,7 @@
 import streamlit as st
 st.set_page_config(layout="wide", page_title="Homepage")
 if 'authenticated' not in st.session_state or not st.session_state['authenticated']:
-    st.switch_page("pages/login.py")
+    st.switch_page("pages/Account.py")
 import os
 from dotenv import load_dotenv
 from streamlit_oauth import OAuth2Component
