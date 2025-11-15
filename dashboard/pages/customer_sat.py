@@ -1,9 +1,12 @@
+import streamlit as st
+st.set_page_config(layout="wide", page_title="Dashboard")
+if 'authenticated' not in st.session_state or not st.session_state['authenticated']:
+    st.switch_page("pages/login.py")
 import re
 import os
 import sys
 import plotly.graph_objects as go
 from datetime import date, timedelta
-import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
@@ -73,7 +76,6 @@ db = os.getenv('DB_NAME')
 conn_str = f'mssql+pymssql://{user}:{password}@{host}:{port}/{db}' 
 
 engine = create_engine(conn_str)
-st.set_page_config(layout="wide", page_title="Dashboard")
 #####################################################################################
 #####################################################################################
 # Dashboard Title
